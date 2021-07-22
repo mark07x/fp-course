@@ -64,7 +64,7 @@ get = State (\x -> (x, x))
 put ::
   s
   -> State s ()
-put x = State ((,) () . const x)
+put x = State $ const ((), x)
 
 -- | Implement the `Functor` instance for `State s`.
 --
@@ -75,8 +75,8 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  g <$> State f = State $ replaceFirst g <$> f
-    where replaceFirst g' (a, s) = (g' a, s)
+  g <$> State f = State $ replaceFirst <$> f
+    where replaceFirst (a, s) = (g a, s)
 
 -- | Implement the `Applicative` instance for `State s`.
 --
