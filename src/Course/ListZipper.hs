@@ -455,8 +455,10 @@ moveLeftN' ::
   Int
   -> ListZipper a
   -> Either Int (ListZipper a)
-moveLeftN' =
-  error "todo: Course.ListZipper#moveLeftN'"
+moveLeftN' n z@(ListZipper l _ _) | n == 0 = Right z
+                                  | n > 0 = (Right <$> (toOptional $ moveLeftN n z)) ??
+                                            Left (length l)
+                                  | otherwise = moveRightN' (-n) z
 
 -- | Move the focus right the given number of positions. If the value is negative, move left instead.
 -- If the focus cannot be moved, the given number of times, return the value by which it can be moved instead.
@@ -479,8 +481,11 @@ moveRightN' ::
   Int
   -> ListZipper a
   -> Either Int (ListZipper a)
-moveRightN' =
-  error "todo: Course.ListZipper#moveRightN'"
+moveRightN' n z@(ListZipper _ _ r) | n == 0 = Right z
+                                   | n > 0 = (Right <$> (toOptional $ moveRightN n z)) ??
+                                             Left (length r)
+                                   | otherwise = moveLeftN' (-n) z
+
 
 -- | Move the focus to the given absolute position in the zipper. Traverse the zipper only to the extent required.
 --
@@ -496,8 +501,7 @@ nth ::
   Int
   -> ListZipper a
   -> MaybeListZipper a
-nth =
-  error "todo: Course.ListZipper#nth"
+nth n z = moveRightN n $ start z
 
 -- | Return the absolute position of the current focus in the zipper.
 --
@@ -508,8 +512,7 @@ nth =
 index ::
   ListZipper a
   -> Int
-index =
-  error "todo: Course.ListZipper#index"
+index (ListZipper l _ _) = length l
 
 -- | Move the focus to the end of the zipper.
 --
@@ -522,8 +525,10 @@ index =
 end ::
   ListZipper a
   -> ListZipper a
-end =
-  error "todo: Course.ListZipper#end"
+end z@(ListZipper l a r) = case r' of 
+    x :. xs -> ListZipper (xs ++ a :. l) x Nil
+    _ -> z
+  where r' = reverse r
 
 -- | Move the focus to the start of the zipper.
 --
@@ -536,8 +541,10 @@ end =
 start ::
   ListZipper a
   -> ListZipper a
-start =
-  error "todo: Course.ListZipper#start"
+start z@(ListZipper l a r) = case l' of 
+    x :. xs -> ListZipper Nil x (xs ++ a :. r)
+    _ -> z
+  where l' = reverse l
 
 -- | Delete the current focus and pull the left values to take the empty position.
 --
